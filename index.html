@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Code Showcase</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #f5f5f5;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #ffd700;
+    }
+    pre {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #333;
+    }
+    code {
+      color: #dcdcdc;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 14px;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI Code Showcase</h1>
+
+  <section>
+    <h2>Car Game</h2>
+    <pre><code>Car Game   WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Car Game")
+
+# Colors
+WHITE = (255, 255, 255)
+GRAY = (50, 50, 50)
+SKIN = (255, 220, 177)
+RED = (139, 0 ,0)
+# GREEN = (30, 200, 30)
+BLACK = (0, 0, 0)
+YELLOW = (255, 255, 0)
+
+
+# Player car
+CAR_WIDTH, CAR_HEIGHT = 40, 70
+player_x = WIDTH // 2 - CAR_WIDTH // 2
+player_y = HEIGHT - CAR_HEIGHT - 20
+player_speed = 9  # faster, more responsive
+
+# Enemy cars
+ENEMY_WIDTH, ENEMY_HEIGHT = 50, 70
+enemy_speed = 20  # faster enemies
+enemies = []
+
+# Score
+score = 0
+font = pygame.font.SysFont("Arial", 28)
+
+clock = pygame.time.Clock()
+
+
+def spawn_enemy():
+    lane_positions = [100, 180, 260]  # 3 lanes
+    x = random.choice(lane_positions)
+    y = -ENEMY_HEIGHT
+    enemies.append(pygame.Rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT))
+
+
+def draw_window():
+    WIN.fill(GRAY)
+
+    # Center road line
+    pygame.draw.rect(WIN, WHITE, (WIDTH // 2 - 5, 0, 10, HEIGHT))</code></pre>
+  </section>
+
+  <section>
+    <h2>Scary Looking Flappy Bird</h2>
+    <pre><code>Scary Looking Flappy Bird      import pygame
+import random
+
+pygame.init()
+
+WIDTH, HEIGHT = 400, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Flappy Bird")
+
+WHITE = (255, 255, 255)
+YELLOW = (218, 165, 32)
+GREEN = (0, 200, 0)   
+RED = (70, 0, 0)
+BLACK = (0, 0, 0)
+
+clock = pygame.time.Clock()
+
+# Load background image
+background = pygame.image.load("skull.png")   # &lt;-- your image file
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
+bird_x = 80
+bird_y = HEIGHT // 2
+bird_radius = 15
+bird_velocity = 2
+gravity = 0.5
+jump_strength = -8
+
+pipes = []
+pipe_width = 60
+pipe_gap = 135
+score = 0
+game_over = False
+
+def create_pipe():
+    top_height = random.randint(50, 300)
+    return {
+        "x": WIDTH,
+        "top": top_height,
+        "bottom": top_height + pipe_gap
+    }
+
+pipe_timer = 0
+
+running = True
+while running:
+    clock.tick(60)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not game_over:
+                bird_velocity = jump_strength
+
+            # Restart game on SPACE after game over
+            if event.key == pygame.K_SPACE and game_over:
+                bird_y = HEIGHT // 2
+                bird_velocity = 2
+                pipes = []
+                score = 0
+                game_over = False
+
+    if not game_over:
+        bird_velocity += gravity
+        bird_y += bird_velocity
+
+        pipe_timer += 1
+        if pipe_timer > 90:
+            pipes.append(create_pipe())
+            pipe_timer = 0
+
+        for pipe in pipes:
+            pipe["x"] -= 3
+
+            # Collision detection
+            if (bird_x + bird_radius &gt; pipe["x"] and
+                bird_x - bird_radius &lt; pipe["x"] + pipe_width and
+                (bird_y - bird_radius &lt; pipe["top"] or
+                 bird_y + bird_radius &gt; pipe["bottom"])):
+                game_over = True
+
+            # Score
+            if pipe["x"] + pipe_width &lt; bird_x and not pipe.get("scored", False):
+                score += 1
+                pipe["scored"] = True
+
+        pipes = [p for p in pipes if p["x"] + pipe_width &gt; 0]
+
+        if bird_y &lt; 0 or bird_y &gt; HEIGHT:
+            game_over = True
+
+    # Draw background
+    screen.blit(background, (0, 0))
+
+    # Draw bird
+    pygame.draw.circle(screen, YELLOW, (int(bird_x), int(bird_y)), bird_radius)
+
+    # Draw pipes
+    for pipe in pipes:
+        pygame.draw.rect(screen, RED, (pipe["x"], 0, pipe_width, pipe["top"]))
+        pygame.draw.rect(
+            screen,
+            RED,
+            (pipe["x"], pipe["bottom"], pipe_width, HEIGHT - pipe["bottom"])
+        )
+
+    # Score text
+    font = pygame.font.Font(None, 36)
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(score_text, (10, 10))
+
+    # Game over text
+    if game_over:
+        game_over_text = font.render("YOU FAILED ME", True, RED)
+        screen.blit(game_over_text, (110, HEIGHT // 2))
+
+    pygame.display.flip()
+
+pygame.quit()</code></pre>
+  </section>
+
+  <section>
+    <h2>AI Chat Bot</h2>
+    <pre><code>Ai Chat Bot       import sys
+
+from dotenv import load_dotenv
+from huggingface_hub import InferenceClient, get_token
+
+load_dotenv()
+
+token = get_token()
+if not token:
+    print("Error: Hugging Face token not found.", file=sys.stderr)
+    print(
+        "\nSet for this PowerShell session:\n"
+        '  $env:HF_TOKEN = "hf_..."\n'
+        "\nOr add to `.env`:\n"
+        "  HF_TOKEN=hf_...\n"
+        "\nOr run once: huggingface-cli login\n"
+        "\nGet a token: https://huggingface.co/settings/tokens",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+client = InferenceClient(api_key=token)
+completion = client.chat.completions.create(
+    model="moonshotai/Kimi-K2-Thinking",
+    messages=[
+        {
+            "role": "user",
+            "content": "richest man in world"
+        }
+    ],
+)
+
+message = completion.choices[0].message
+print(message.content)</code></pre>
+  </section>
+</body>
+</html>
